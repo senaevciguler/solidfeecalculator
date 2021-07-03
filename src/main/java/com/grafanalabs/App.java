@@ -1,28 +1,31 @@
 package com.grafanalabs;
 
+import com.grafanalabs.enums.ItemType;
+import com.grafanalabs.enums.UserType;
 import com.grafanalabs.exception.GrafanaException;
+import com.grafanalabs.factory.UserFactory;
 
 import java.time.LocalDate;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.grafanalabs.enums.ItemType.AUCTION;
+import static com.grafanalabs.enums.UserType.COMPANY;
 
 /**
  * SolidFeeCalculator
  */
 public class App {
+
+    private static final Logger logger = Logger.getLogger(App.class.getName());
+
     public static void main(String[] args) {
         int fee;
         try {
-            fee = calculateFee(1, 0, 100, LocalDate.now());
+            fee = calculateFee(COMPANY, AUCTION, 100, LocalDate.now());
         } catch (Exception exception) {
             throw new GrafanaException("something went wrong");
         }
-
-        Logger logger
-                = Logger.getLogger(
-                App.class.getName());
-        if (logger.isLoggable(Level.INFO))
-            logger.info("calculate is:" + fee);
+        logger.info("calculate is:" + fee);
     }
 
     /**
@@ -34,44 +37,8 @@ public class App {
      * @param itemEndDate Item ends
      * @return calculated fee
      */
-
-    public static int calculateFee(int usertype, int itemType, int itemPrice, LocalDate itemEndDate) {
-        try {
-            switch (usertype) {
-                case 0: //Normal
-                    //region Normal user
-                    if (itemType == 0) { //Auction
-                        int endDateDiscount = 0;
-                        if (itemEndDate.compareTo(LocalDate.now()) == 0) endDateDiscount = 10;
-
-                        return itemPrice + 25 - endDateDiscount;
-                    } else if (itemType == 1) { //BuyItNow
-                        int buyItNowDiscount = 10;
-                        return itemPrice + 35 - buyItNowDiscount;
-                    }
-                    break;
-                //endregion
-                case 1: //Company
-                    //region Company
-                    if (itemType == 0) { //Auction
-                        if (itemEndDate.equals(LocalDate.now())) {
-                            return itemPrice + 25 - 15;// EndDate discount and company discount
-                        }
-                        return itemPrice + 25 - 5;// Only company discount
-                    } else if (itemType == 1) { //BuyItNow
-                        return itemPrice + 35 - 15;
-                    }
-                    break;
-                //endregion
-                default:
-            }
-        } catch (Exception exception) {
-            Logger logger
-                    = Logger.getLogger(
-                    App.class.getName());
-
-            logger.log(Level.INFO, exception.getMessage());
-        }
-        return 0;
+    public static int calculateFee(UserType usertype, ItemType itemType, int itemPrice, LocalDate itemEndDate) {
+        return new UserFactory().getUser(usertype)
+                .calculate(itemType, itemPrice, itemEndDate);
     }
 }
