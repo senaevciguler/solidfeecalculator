@@ -38,10 +38,10 @@ public class AppTest
         int itemType = 0; // TODO: Initialize to an appropriate value
         int itemPrice = 0; // TODO: Initialize to an appropriate value
         LocalDate itemEndDate = LocalDate.now(); // TODO: Initialize to an appropriate value
-        int expected = 0; // TODO: Initialize to an appropriate value
+        int expected = 15; // TODO: Initialize to an appropriate value
         int actual;
-        actual = App.CalculateFee(userType, itemType, itemPrice, itemEndDate);
-        // assertEquals(expected, actual);
-        assertTrue(true);
+        actual = App.calculateFee(userType, itemType, itemPrice, itemEndDate);
+        assertEquals(expected, actual);
+        //assertTrue(true);
     }
 }

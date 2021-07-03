@@ -1,67 +1,77 @@
 package com.grafanalabs;
 
+import com.grafanalabs.exception.GrafanaException;
+
 import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * SolidFeeCalculator
- *
  */
 public class App {
-    public static void main( String[] args ) {
-        int fee = 0;
-
+    public static void main(String[] args) {
+        int fee;
         try {
-            fee = CalculateFee(1, 0, 100, LocalDate.now());
-        }
-        catch (Exception exception) {
-            throw new RuntimeException();
+            fee = calculateFee(1, 0, 100, LocalDate.now());
+        } catch (Exception exception) {
+            throw new GrafanaException("something went wrong");
         }
 
-        System.out.println(new Integer(fee).toString());
+        Logger logger
+                = Logger.getLogger(
+                App.class.getName());
+        if (logger.isLoggable(Level.INFO))
+            logger.info("calculate is:" + fee);
     }
 
     /**
-     *   This function handles all calculation you ever need!
-     * 
-     * @param usertype 0= Normal, 1 = Company
-     * @param itemtype 0= Auction, 1 = BuyItNow
-     * @param itemprice
-     * @param itemenddateTime Item ends
+     * This function handles all calculation you ever need!
+     *
+     * @param usertype    0= Normal, 1 = Company
+     * @param itemType    0= Auction, 1 = BuyItNow
+     * @param itemPrice   item price int=0
+     * @param itemEndDate Item ends
      * @return calculated fee
-     */ 
-    public static int CalculateFee(int usertype, int itemtype, int itemprice,  LocalDate itemenddate) {
+     */
+
+    public static int calculateFee(int usertype, int itemType, int itemPrice, LocalDate itemEndDate) {
         try {
             switch (usertype) {
                 case 0: //Normal
                     //region Normal user
-                    if (itemtype == 0) { //Auction
-                        int enddateDiscount = 0;
-                        if (itemenddate.compareTo(LocalDate.now()) == 0) enddateDiscount = 10;
+                    if (itemType == 0) { //Auction
+                        int endDateDiscount = 0;
+                        if (itemEndDate.compareTo(LocalDate.now()) == 0) endDateDiscount = 10;
 
-                        return itemprice + 25 - enddateDiscount;
-                    } else if (itemtype == 1) { //BuyItNow
-                        return itemprice + 35 - 0;
+                        return itemPrice + 25 - endDateDiscount;
+                    } else if (itemType == 1) { //BuyItNow
+                        int buyItNowDiscount = 10;
+                        return itemPrice + 35 - buyItNowDiscount;
                     }
-                    break; 
-                    //endregion
+                    break;
+                //endregion
                 case 1: //Company
                     //region Company
-                    if (itemtype == 0) { //Auction
-                        if (itemenddate.equals(LocalDate.now())) {
-                            return itemprice + 25 - 15;// Enddate discount and company discount
+                    if (itemType == 0) { //Auction
+                        if (itemEndDate.equals(LocalDate.now())) {
+                            return itemPrice + 25 - 15;// EndDate discount and company discount
                         }
-
-                        return itemprice + 25 - 5;// Only company discount
-                    } else if (itemtype == 1) { //BuyItNow
-                        return itemprice + 35 - 5;
+                        return itemPrice + 25 - 5;// Only company discount
+                    } else if (itemType == 1) { //BuyItNow
+                        return itemPrice + 35 - 15;
                     }
-                    break; 
-                    //endregion
+                    break;
+                //endregion
+                default:
             }
         } catch (Exception exception) {
-            System.out.println(exception.getMessage());
-        }
+            Logger logger
+                    = Logger.getLogger(
+                    App.class.getName());
 
+            logger.log(Level.INFO, exception.getMessage());
+        }
         return 0;
     }
 }
